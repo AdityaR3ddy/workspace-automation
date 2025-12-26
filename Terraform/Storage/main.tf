@@ -36,30 +36,31 @@ resource "aws_s3_bucket_policy" "public_access" {
   })
 }
 
+# Corrected Object Resources
 resource "aws_s3_object" "index_html" {
-  bucket       = aws_s3_bucket.dashboard_bucket.id
+  # Change 'dashboard_bucket' to 'web_bucket'
+  bucket       = aws_s3_bucket.web_bucket.id
   key          = "index.html"
-
-  # Go up one level to Root, then down into Automation Project
-  source       = "${path.module}/../Automation Project/index.html"
-  etag         = filemd5("${path.module}/../Automation Project/index.html")
-
+  source       = "${path.module}/../../Automation Project/index.html"
+  etag         = filemd5("${path.module}/../../Automation Project/index.html")
   content_type = "text/html"
 }
 
 resource "aws_s3_object" "style_css" {
-  bucket       = aws_s3_bucket.dashboard_bucket.id
+  # Change 'dashboard_bucket' to 'web_bucket'
+  bucket       = aws_s3_bucket.web_bucket.id
   key          = "style.css"
-  source       = "${path.module}/../Automation Project/style.css"
-  etag         = filemd5("${path.module}/../Automation Project/style.css")
+  source       = "${path.module}/../../Automation Project/style.css"
+  etag         = filemd5("${path.module}/../../Automation Project/style.css")
   content_type = "text/css"
 }
 
 resource "aws_s3_object" "script_js" {
-  bucket       = aws_s3_bucket.dashboard_bucket.id
+  # Change 'dashboard_bucket' to 'web_bucket'
+  bucket       = aws_s3_bucket.web_bucket.id
   key          = "script.js"
-  source       = "${path.module}/../Automation Project/script.js"
-  etag         = filemd5("${path.module}/../Automation Project/script.js")
+  source       = "${path.module}/../../Automation Project/script.js"
+  etag         = filemd5("${path.module}/../../Automation Project/script.js")
   content_type = "application/javascript"
 }
 
