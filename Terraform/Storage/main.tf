@@ -37,29 +37,31 @@ resource "aws_s3_bucket_policy" "public_access" {
 }
 
 resource "aws_s3_object" "index_html" {
-  bucket       = aws_s3_bucket.web_bucket.id
+  bucket       = aws_s3_bucket.dashboard_bucket.id
   key          = "index.html"
-  source       = "${path.module}/../../index.html"
-  etag         = filemd5("${path.module}/../../index.html")
+
+  # Go up one level to Root, then down into Automation Project
+  source       = "${path.module}/../Automation Project/index.html"
+  etag         = filemd5("${path.module}/../Automation Project/index.html")
+
   content_type = "text/html"
 }
 
 resource "aws_s3_object" "style_css" {
-  bucket       = aws_s3_bucket.web_bucket.id
+  bucket       = aws_s3_bucket.dashboard_bucket.id
   key          = "style.css"
-  source       = "${path.module}/../../style.css"
-  etag         = filemd5("${path.module}/../../style.css")
+  source       = "${path.module}/../Automation Project/style.css"
+  etag         = filemd5("${path.module}/../Automation Project/style.css")
   content_type = "text/css"
 }
 
 resource "aws_s3_object" "script_js" {
-  bucket       = aws_s3_bucket.web_bucket.id
+  bucket       = aws_s3_bucket.dashboard_bucket.id
   key          = "script.js"
-  source       = "${path.module}/../../script.js"
-  etag         = filemd5("${path.module}/../../script.js")
+  source       = "${path.module}/../Automation Project/script.js"
+  etag         = filemd5("${path.module}/../Automation Project/script.js")
   content_type = "application/javascript"
 }
-
 
 output "website_url" {
   value = aws_s3_bucket_website_configuration.website.website_endpoint
