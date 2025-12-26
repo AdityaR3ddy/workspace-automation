@@ -1,0 +1,213 @@
+<!Doctype html>
+<html lang="en">
+<head>
+    <meta charset = "UTF-8">
+    <meta name = "viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <form id="workspace-form">
+        <h1 id="appName">Workspace Dashboard</h1>
+
+        <div id="error-message-banner" style="display: none;"></div>
+
+        <!-- DIV FOR FETCHING TYPE OF REQUEST FROM USER -->
+        <div name="ws-details" id="ws-details">
+            <lable for="request-type">Select The Request Type : </lable>
+            <Select name="request-type" id="request-type">
+                <option value="default">--Please Select an Option--</option>
+                <option value="new-workspace">New Workspace Creation</option>
+                <option value="update-version">Workspace Version Update</option>
+                <option value="convert-to-tep">Convert existing workspace to TEP</option>
+                <option value="change-aws-account">Change the AWS account of Workspace</option>
+                <option value="access-group-update">Add or Remove Access Groups for Workspace</option>
+                <option value="misc-request">Update Tags, System number, Branch, Folder</option>
+            </Select>
+        </div>
+
+        <!-- OPTIONS SHOWN FOR NEW WORKSPACE REQUESTS -->
+        <div id="fields-new-workspace" class="extra-fields" style="display: none;">
+            <label for="new-workspace-type">Workspace Type: </label>
+            <select name="new-workspace-type" id="new-workspace-type">
+                <option value="default">--Please Select an Option--</option>
+                <option value="vcs">GitHub-VCS</option>
+                <option value="non-vcs">non-VCS</option>
+                <option value="tep">TEP</option>
+                <option value="no-account">TEP Workspace without AWS account</option>
+            </select>
+
+            <label for="new-ws-name">Workspace Name: </label>
+            <input type="text" id="new-ws-name" name="new-ws-name">
+
+            <label for="aws-account-num">AWS Account ID: </label>
+            <input type="text" id="aws-account-num" name="aws-account-num">
+
+            <label for="new-system-num">Enter System Number: </label>
+            <input type="text" id="new-system-num" name="new-system-num">
+
+            <label for="lob">Enter LOB: </label>
+            <input type="text" id="lob" name="lob">
+
+            <hr class="form-divider">
+
+            <!-- OPTIONS FOR VCS -->
+            <div id="subfields-vcs" class="sub-extra-fields" style="display: none;">
+                <label for="vcs-apply-group">Enter Apply Access Group: </label>
+                <input type="text" id="vcs-apply-group" name="vcs-apply-group">
+                <label for="vcs-plan-group">Enter Plan Access Group: </label>
+                <input type="text" id="vcs-plan-group" name="vcs-plan-group">
+                <label for="vcs-read-group">Enter Read Access Group: </label>
+                <input type="text" id="vcs-read-group" name="vcs-read-group">
+                <label for="repo-url">Repo URL: </label>
+                <input type="text" id="repo-url" name="repo-url">
+                <label for="vcs-branch">branch: </label>
+                <input type="text" id="branch" name="branch">
+                <label for="vcs-working-dir">working directory: </label>
+                <input type="text" id="vcs-working-dir" name="vcs-working-dir">
+                <label for="confirm-admin-access">Confirm you have provided admin-access for TFE-PROD-P in your github repo in Add people: </lable>
+                <input type="text" id="confirm-admin-access" name="confirm-admin-access">
+            </div>
+
+            <!-- OPTIONS FOR non-VCS -->
+            <div id="subfields-non-vcs" class="sub-extra-fields" style="display: none;">
+                <label for="non-vcs-apply-group">Enter Apply Access Group: </label>
+                <input type="text" id="vcs-apply-group" name="vcs-apply-group">
+                <label for="non-vcs-plan-group">Enter Plan Access Group: </label>
+                <input type="text" id="non-vcs-plan-group" name="non-vcs-plan-group">
+                <label for="non-vcs-read-group">Enter Read Access Group: </label>
+                <input type="text" id="non-vcs-read-group" name="non-vcs-read-group">
+            </div>
+
+            <!-- OPTIONS FOR TEP -->
+            <div id="subfields-tep" class="sub-extra-fields" style="display: none;">
+                <label for="tep-plan-group">Enter Plan Access Group: </label>
+                <input type="text" id="tep-plan-group" name="tep-plan-group">
+                <label for="tep-read-group">Enter Read Access Group: </label>
+                <input type="text" id="tep-read-group" name="tep-read-group">
+            </div>
+
+            <!-- OPTIONS FOR No-AWS-Account workspace TEP -->
+            <div id="subfields-no-account" class="sub-extra-fields" style="display: none;">
+                <label for="no-account-plan-group">Enter Plan Access Group: </label>
+                <input type="text" id="no-account-plan-group" name="no-account-plan-group">
+                <label for="no-account-read-group">Enter Read Access Group: </label>
+                <input type="text" id="no-account-read-group" name="no-account-read-group">
+            </div>
+        </div>
+
+        <!-- OPTIONS SHOWN FOR VERSION UPGRADE -->
+        <div id="fields-update-version" class="extra-fields" style="display: none;">
+            <label for="version-ws-name">Workspace Name: </label>
+            <input type="text" id="version-ws-name" name="version-ws-name">
+            <label for="version-value">Input version you want to upgrade to: </label>
+            <input type="text" id="version-value" name="version-value">
+        </div>
+
+        <!-- OPTIONS SHOWN FOR CHANGING AWS ACCOUNT -->
+        <div id="fields-change-aws-account" class="extra-fields" style="display: none;">
+            <label for="aws-change-ws-name">Workspace Name: </label>
+            <input type="text" id="aws-change-ws-name" name="aws-change-ws-name">
+            <label for="current-aws-num">Current AWS Account ID: </label>
+            <input type="text" id="current-aws-num" name="current-aws-num">
+            <label for="new-aws-num">New AWS Account ID to update: </label>
+            <input type="text" id="new-aws-num" name="new-aws-num">
+        </div>
+
+        <!-- OPTIONS SHOWN FOR CONVERSION TO TEP -->
+        <div id="fields-convert-to-tep" class="extra-fields" style="display: none;">
+            <label for="convert-ws-name">Workspace Name: </label>
+            <input type="text" id="convert-ws-name" name="convert-ws-name">
+            <label for="version-value">Input version you want to upgrade to: </label>
+            <input type="text" id="version-value" name="version-value" placeholder="optional leave empty for no change">
+        </div>
+
+        <!-- OPTIONS SHOWN FOR UPDATING ACCESS GROUPS -->
+        <div id="fields-access-group-update" class="extra-fields" style="display: none;">
+            <label for="group-ws-name">Workspace Name:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="group-ws-name" placeholder="Enter full workspace name">
+                <button type="button" id="fetch-details-btn">Fetch Details</button>
+            </div>
+
+            <hr class="form-divider">
+
+            <div class="group-management-zone">
+                <div class="access-category">
+                    <div class="category-header">
+                        <strong>Apply Access Groups</strong>
+                        <button type="button" class="add-btn" onclick="addNewInput('apply-list', 'apply')">+</button>
+                    </div>
+                    <div id="apply-list" class="dynamic-list"></div>
+                </div>
+
+                <div class="access-category">
+                    <div class="category-header">
+                        <strong>Plan Access Groups</strong>
+                        <button type="button" class="add-btn" onclick="addNewInput('plan-list', 'plan')">+</button>
+                    </div>
+                    <div id="plan-list" class="dynamic-list"></div>
+                </div>
+
+                <div class="access-category">
+                    <div class="category-header">
+                        <strong>Read Access Groups</strong>
+                        <button type="button" class="add-btn" onclick="addNewInput('read-list', 'read')">+</button>
+                    </div>
+                    <div id="read-list" class="dynamic-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPTIONS SHOWN FOR MISC REQUEST THAT INCLUDE SYSTEM NUMBER CHANGE, TAGS UPDATE, BRANCH AND FOLDER CHANGE -->
+        <div id="fields-misc-request" class="extra-fields" style="display: none;">
+            <label for="misc-ws-name">Workspace Name:</label>
+            <input type="text" id="misc-ws-name" name="misc-ws-name">
+            <label for="new-system-number">enter new system number: </label>
+            <input type="text" id="new-system-number" name="new-system-number" placeholder="leave empty for no change">
+            <label for="branch">enter new branch name (case sensitive): </label>
+            <input type="text" id="branch" name="branch" placeholder="leave empty for no change">
+            <label for="working-dir">enter new working directory name (case sensitive): </label>
+            <input type="text" id="working-dir" name="working-dir" placeholder="leave empty for no change">
+        </div>
+
+        <!-- Submit button to sent Active page content -->
+        <div style="margin-top: 20px;">
+            <button type="submit" id="submitBtn" class="primary-btn">Submit Request</button>
+        </div>
+
+        <!-- Review and confirm -->
+        <div id="review-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>&nbsp 🔍 Review & Confirm</h3>
+                <p>Please verify the details below before sending the request to AWS.</p>
+                <hr>
+                <div id="review-data-container">
+                    </div>
+                <hr>
+                <div class="modal-buttons">
+                    <button type="button" onclick="closeModal()" class="cancel-btn">Edit Details</button>
+                    <button type="button" id="confirmSubmitBtn" class="confirm-btn">Confirm & Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- POP-UP CONFIRMATION
+        <div id="review-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Submit Confirmation</h3>
+                </div>
+
+                <div id="review-data-container">
+                    </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal()" class="cancel-btn">No, Edit</button>
+                    <button type="button" id="confirmSubmitBtn" class="confirm-btn">Yes, Submit</button>
+                </div>
+            </div>
+        </div> -->
+    </form>
+</body>
+

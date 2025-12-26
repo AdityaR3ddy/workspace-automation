@@ -1,0 +1,253 @@
+/* ==========================================
+ 1 . GLOBAL & LAYOUT STYLES                              *
+ ========================================== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f9;
+    color: #333;
+    line-height: 1.6;
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+/* Container Styling */
+#ws-details, .extra-fields, .sub-extra-fields {
+background: #fff;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+margin-bottom: 20px;
+}
+
+/* ==========================================
+ 2 . FORM ELEMENT STYLES                                 *
+ ========================================== */
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #555;
+    margin-top: 15px;
+}
+
+select, input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+select:focus, input[type="text"]:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.form-divider {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+    margin: 25px 0;
+}
+
+/* Main Action Button */
+#submitBtn {
+background-color: #3498db;
+color: white;
+padding: 12px 24px;
+border: none;
+border-radius: 4px;
+font-size: 16px;
+font-weight: bold;
+cursor: pointer;
+width: 100%;
+transition: background-color 0.3s;
+margin-top: 20px;
+}
+
+#submitBtn:hover {
+background-color: #2980b9;
+}
+
+/* ==========================================
+ 3 . STATUS & ERROR BANNERS                              *
+ ========================================== */
+#error-message-banner {
+display: none;
+padding: 15px;
+border-radius: 6px;
+margin-bottom: 20px;
+font-weight: bold;
+font-family: sans-serif;
+border: 1px solid transparent;
+}
+
+/* ==========================================
+ 4 . DYNAMIC LISTS (GROUP UPDATES)                       *
+ ========================================== */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    background: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.group-item {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+    align-items: center;
+}
+
+.group-item input { flex-grow: 1; }
+
+.delete-btn {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.add-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* ==========================================
+ 5 . MODAL POP-UP (WITH OUTER SPACING)                   *
+ ========================================== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+
+    /* Centering and Outer Spacing */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px; /* This ensures the popup never touches the browser edges */
+}
+
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 14px;
+    width: 100%;       /* Flexible width */
+    max-width: 550px;  /* Maximum width */
+    margin: auto;      /* Extra safety for centering */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    animation: popIn 0.25s ease-out;
+    border: 1px solid rgba(255,255,255,0.1); /* Subtle highlight edge */
+    padding : 4px;
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Internal Spacing - Keeping the buttons away from edges */
+.modal-header {
+    padding: 30px 30px 15px 30px; /* Large top/side padding */
+    text-align: left;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1a202c;
+    font-size: 1.6rem;
+    font-weight: 800;
+}
+
+#review-data-container {
+padding: 0 30px 20px 30px; /* Matches header padding */
+max-height: 400px;
+overflow-y: auto;
+}
+
+/* Beautiful Table Styling */
+#review-data-container table {
+width: 100%;
+background: #fcfcfc;
+border-radius: 10px;
+border: 1px solid #eef2f7;
+border-collapse: separate;
+border-spacing: 0;
+}
+
+#review-data-container td {
+padding: 14px 20px;
+border-bottom: 1px solid #eef2f7;
+font-size: 14px;
+}
+
+#review-data-container tr:last-child td {
+border-bottom: none; /* Clean finish for the last row */
+}
+
+/* Footer Styling - Proper button spacing */
+.modal-footer {
+    padding: 20px 30px 30px 30px; /* Significant bottom padding */
+    background-color: #ffffff;    /* Clean white background */
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.confirm-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    transition: all 0.2s;
+}
+
+.cancel-btn {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 14px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.confirm-btn:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3); }
+.cancel-btn:hover { background: #e2e8f0; color: #1e293b; }
