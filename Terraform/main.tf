@@ -8,3 +8,4 @@ module "workspace_automation_s3_website" {
   source      = "./Storage"
   bucket_name = "workspace-automation-${random_id.suffix.hex}"
 }
+
