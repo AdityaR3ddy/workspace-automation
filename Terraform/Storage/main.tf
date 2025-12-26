@@ -22,6 +22,9 @@ resource "aws_s3_bucket_public_access_block" "allow_public_policy" {
 resource "aws_s3_bucket_policy" "public_access" {
   bucket = aws_s3_bucket.web_bucket.id
 
+  # THIS IS THE FIX: It forces Terraform to wait for the block to be removed
+  depends_on = [aws_s3_bucket_public_access_block.allow_public_policy]
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
