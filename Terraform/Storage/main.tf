@@ -39,24 +39,24 @@ resource "aws_s3_bucket_policy" "public_access" {
 resource "aws_s3_object" "index_html" {
   bucket       = aws_s3_bucket.web_bucket.id
   key          = "index.html"
-  source       = "/home/juez/workspace-automation/Automation project/index.html"
-  etag = filemd5("/home/juez/workspace-automation/Automation project}/index.html")
+  source       = "${path.module}/../../index.html"
+  etag         = filemd5("${path.module}/../../index.html")
   content_type = "text/html"
 }
 
 resource "aws_s3_object" "style_css" {
   bucket       = aws_s3_bucket.web_bucket.id
   key          = "style.css"
-  source       = "/home/juez/workspace-automation/Automation project/style.css"
-  etag = filemd5("/home/juez/workspace-automation/Automation project/style.css")
+  source       = "${path.module}/../../style.css"
+  etag         = filemd5("${path.module}/../../style.css")
   content_type = "text/css"
 }
 
 resource "aws_s3_object" "script_js" {
   bucket       = aws_s3_bucket.web_bucket.id
   key          = "script.js"
-  source       = "${path.module}/script.js"
-  etag = filemd5("/home/juez/workspace-automation/Automation project/script.js")
+  source       = "${path.module}/../../script.js"
+  etag         = filemd5("${path.module}/../../script.js")
   content_type = "application/javascript"
 }
 
