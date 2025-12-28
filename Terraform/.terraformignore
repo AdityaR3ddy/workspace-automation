@@ -1,0 +1,7 @@
+# Tell TFC NOT to ignore zip files
+!*.zip
+
+# Ignore local terraform state and temporary files
+.terraform/
+*.tfstate
+*.tfstate.backup
