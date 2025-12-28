@@ -22,13 +22,13 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 # The Lambda Function definition
 resource "aws_lambda_function" "workspace_lambda" {
-  # This zip file will be created by GitHub Actions in the root
-  filename         = "${path.module}/../../../payload.zip" 
+  # The zip is created in the ROOT. 
+  # From modules/lambda_handler, we go up 3 levels to reach the root.
+  filename         = "${path.module}/../../../payload.zip"
   function_name    = "workspace_automation_handler"
   role             = aws_iam_role.iam_for_lambda.arn
-  handler          = "lambda_function.lambda_handler" # filename.function_name
+  handler          = "lambda_function.lambda_handler" # filename.function
   runtime          = "python3.11"
 
-  # This ensures the Lambda updates when the zip file changes
   source_code_hash = filebase64sha256("${path.module}/../../../payload.zip")
 }

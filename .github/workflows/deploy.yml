@@ -1,4 +1,4 @@
-name: Deploy Workspace Tool
+name: TFC CLI Deploy
 
 on:
   push:
@@ -11,18 +11,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Zip Lambda
+        run: |
+          cd lambda_folder
+          zip -r ../payload.zip .
+          cd ..
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
 
-      - name: Zip Lambda Code
-        run: |
-          cd lambda_function
-          zip -r ../payload.zip .
-          cd ..
-
       - name: Terraform Init & Apply
+        working-directory: ./Terraform
         run: |
           terraform init
           terraform apply -auto-approve
