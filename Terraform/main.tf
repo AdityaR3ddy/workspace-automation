@@ -8,7 +8,8 @@ module "workspace_automation_s3_website" {
   source      = "./modules/storage"
   bucket_name = "workspace-automation-${random_id.suffix.hex}"
 }
-
+/*
 module "lambda_handler" {
   source = "./modules/lambda_handler"
 }
+*/
