@@ -1,7 +1,9 @@
-# Tell TFC NOT to ignore zip files
-!*.zip
+# Do not ignore the payload
+!payload.zip
+!modules/lambda_handler/payload.zip
 
-# Ignore local terraform state and temporary files
+# Standard ignores
+.git/
 .terraform/
-*.tfstate
-*.tfstate.backup
+terraform.tfstate*
+*.tfvars
