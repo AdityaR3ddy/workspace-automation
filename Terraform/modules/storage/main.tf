@@ -42,8 +42,8 @@ resource "aws_s3_bucket_policy" "public_access" {
 resource "aws_s3_object" "index_html" {
   bucket       = aws_s3_bucket.web_bucket.id
   key          = "index.html"
-  source       = "${path.module}/../../Automation-project/index.html"
-  etag         = filemd5("${path.module}/../../Automation-project/index.html")
+  source       = "${path.module}/../../../Automation-project/index.html"
+  etag         = filemd5("${path.module}/../../../Automation-project/index.html")
 
   content_type = "text/html"
 }
@@ -51,16 +51,16 @@ resource "aws_s3_object" "index_html" {
 resource "aws_s3_object" "style_css" {
   bucket       = aws_s3_bucket.web_bucket.id
   key          = "style.css"
-  source       = "${path.module}/../../Automation-project/style.css"
-  etag         = filemd5("${path.module}/../../Automation-project/style.css")
+  source       = "${path.module}/../../../Automation-project/style.css"
+  etag         = filemd5("${path.module}/../../../Automation-project/style.css")
   content_type = "text/css"
 }
 
 resource "aws_s3_object" "script_js" {
   bucket       = aws_s3_bucket.web_bucket.id
   key          = "script.js"
-  source       = "${path.module}/../../Automation-project/script.js"
-  etag         = filemd5("${path.module}/../../Automation-project/script.js")
+  source       = "${path.module}/../../../Automation-project/script.js"
+  etag         = filemd5("${path.module}/../../../Automation-project/script.js")
   content_type = "application/javascript"
 }
 

@@ -5,7 +5,7 @@ resource "random_id" "suffix" {
 
 
 module "workspace_automation_s3_website" {
-  source      = "./Storage"
+  source      = "./modules/storage"
   bucket_name = "workspace-automation-${random_id.suffix.hex}"
 }
 
