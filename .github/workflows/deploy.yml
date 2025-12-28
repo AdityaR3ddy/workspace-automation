@@ -14,7 +14,7 @@ jobs:
       - name: Zip Lambda
         run: |
           cd lambda_folder
-          zip -r ../payload.zip .
+          zip -r ../Terraform/payload.zip .
           cd ..
 
       - name: Setup Terraform
