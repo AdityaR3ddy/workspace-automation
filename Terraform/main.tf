@@ -14,4 +14,6 @@ module "lambda_handler" {
   source = "./modules/lambda_handler"
 }
 
-
+module "api_gateway" {
+  source = "./modules/api_gateway"
+}
