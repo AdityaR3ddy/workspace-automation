@@ -22,11 +22,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # IMPORTANT: Re-added the zip step so your Lambda module has its code
-      - name: Zip Lambda
-        run: |
-          cd lambda_folder
-          zip -r ../Terraform/modules/lambda_handler/payload.zip .
+      # ZIP STEP REMOVED - Terraform now handles this via archive_file
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -45,7 +41,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          # Capture output to a file so we can find the Run ID for the comment
           if [ "${{ github.event.inputs.action }}" == "plan" ]; then
             terraform plan -no-color | tee run_output.txt
           else
@@ -53,15 +48,13 @@ jobs:
           fi
 
       - name: Post TFC Comment
-        if: always() # Run even if Terraform fails so you can see why in TFC
+        if: always()
         run: |
-          # 1. Extract the Run ID (e.g. run-xxxxxxx) from the text file
           RUN_ID=$(grep -oE "run-[a-zA-Z0-9]+" ./Terraform/run_output.txt | head -1)
           
           if [ -n "$RUN_ID" ]; then
             echo "Posting comment to TFC Run: $RUN_ID"
             
-            # 2. Use the TFC API to inject your 'reason' into the actual Comment box
             curl --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
                  --header "Content-Type: application/vnd.api+json" \
                  --request POST \
