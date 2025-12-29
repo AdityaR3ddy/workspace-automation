@@ -1,4 +1,4 @@
-name: Terraform Plan and Apply
+name: TFC CLI Deploy
 
 on:
   push:
@@ -6,78 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  plan:
-    name: "Terraform Plan"
+  terraform:
     runs-on: ubuntu-latest
-    env:
-      # These ensure TFC can authenticate with AWS during the plan
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-    outputs:
-      plan_outcome: ${{ steps.plan.outcome }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Zip Lambda
         run: |
           cd lambda_folder
+          # We place the zip directly inside the module folder for easiest pathing
           zip -r ../Terraform/modules/lambda_handler/payload.zip .
+          cd ..
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v2
         with:
-          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Terraform Init
+      - name: Terraform Init & Apply
         working-directory: ./Terraform
-        run: terraform init
-
-      - name: Terraform Plan
-        id: plan
-        working-directory: ./Terraform
-        run: terraform plan -no-color
-        continue-on-error: true
-
-      - name: Post Plan to Summary
+        env:
+          # These map to the Secrets you added in GitHub Settings
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          echo "### Terraform Plan Output" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>Click to expand</summary>" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```terraform' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.plan.outputs.stdout }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
-
-  apply:
-    name: "Terraform Apply"
-    needs: plan
-    runs-on: ubuntu-latest
-    environment: production
-    if: github.ref == 'refs/heads/main'
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Zip Lambda
-        run: |
-          cd lambda_folder
-          zip -r ../Terraform/modules/lambda_handler/payload.zip .
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
-
-      - name: Terraform Init
-        working-directory: ./Terraform
-        run: terraform init
-
-      - name: Terraform Apply
-        working-directory: ./Terraform
-        run: terraform apply -auto-approve
+          terraform init
+          #terraform apply -auto-approve
+          terraform plan
