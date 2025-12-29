@@ -1,19 +1,17 @@
-name: TFC Manual Deploy
+name: TFC Manual Deploy with Comment
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'What should Terraform do?'
+        description: 'Action'
         required: true
         default: 'plan'
         type: choice
-        options:
-        - plan
-        - apply
+        options: [plan, apply]
       reason:
-        description: 'MANDATORY: Why are you running this? (Shows in Terraform UI)'
-        required: true # GitHub will mark this with a red asterisk
+        description: 'MANDATORY: Your comment for the TFC UI'
+        required: true
         type: string
 
 jobs:
@@ -24,14 +22,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # SAFETY CHECK: If the reason is empty or just spaces, fail the build immediately
-      - name: Validate Reason Input
-        run: |
-          if [ -z "${{ github.event.inputs.reason }}" ]; then
-            echo "::error::You must provide a reason for manual execution!"
-            exit 1
-          fi
-
+      # IMPORTANT: Re-added the zip step so your Lambda module has its code
       - name: Zip Lambda
         run: |
           cd lambda_folder
@@ -46,22 +37,43 @@ jobs:
         working-directory: ./Terraform
         run: terraform init
 
-      - name: Terraform Plan
-        if: github.event.inputs.action == 'plan'
+      - name: Terraform Action
+        id: tf_run
         working-directory: ./Terraform
         env:
-          TF_VAR_TFC_RUN_MESSAGE: "${{ github.event.inputs.reason }} (by ${{ github.actor }})"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        run: terraform plan
+        run: |
+          # Capture output to a file so we can find the Run ID for the comment
+          if [ "${{ github.event.inputs.action }}" == "plan" ]; then
+            terraform plan -no-color | tee run_output.txt
+          else
+            terraform apply -auto-approve -no-color | tee run_output.txt
+          fi
 
-      - name: Terraform Apply
-        if: github.event.inputs.action == 'apply'
-        working-directory: ./Terraform
-        env:
-          TF_VAR_TFC_RUN_MESSAGE: "${{ github.event.inputs.reason }} (by ${{ github.actor }})"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        run: terraform apply -auto-approve
+      - name: Post TFC Comment
+        if: always() # Run even if Terraform fails so you can see why in TFC
+        run: |
+          # 1. Extract the Run ID (e.g. run-xxxxxxx) from the text file
+          RUN_ID=$(grep -oE "run-[a-zA-Z0-9]+" ./Terraform/run_output.txt | head -1)
+          
+          if [ -n "$RUN_ID" ]; then
+            echo "Posting comment to TFC Run: $RUN_ID"
+            
+            # 2. Use the TFC API to inject your 'reason' into the actual Comment box
+            curl --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
+                 --header "Content-Type: application/vnd.api+json" \
+                 --request POST \
+                 --data "{
+                   \"data\": {
+                     \"type\": \"comments\",
+                     \"attributes\": {
+                       \"body\": \"${{ github.event.inputs.reason }} (Manual trigger by @${{ github.actor }})\"
+                     }
+                   }
+                 }" \
+                 "https://app.terraform.io/api/v2/runs/$RUN_ID/comments"
+          else
+            echo "No TFC Run ID found. Comment could not be posted."
+          fi
