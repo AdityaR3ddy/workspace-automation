@@ -16,4 +16,8 @@ module "lambda_handler" {
 
 module "api_gateway" {
   source = "./modules/api_gateway"
+  
+  # This is the connection!
+  lambda_function_name = module.lambda_handler.function_name
+  lambda_invoke_arn    = module.lambda_handler.invoke_arn
 }
