@@ -14,7 +14,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.lambda_api.id
   integration_type = "AWS_PROXY"
   # Use the variable instead of the resource reference
-  integration_uri  = var.lambda_invoke_arn
+  integration_uri  = var.invoke_arn
 }
 
 # 3. The Route (e.g., your-url.com/execute)
@@ -35,7 +35,7 @@ resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   # Use the variable instead of the resource reference
-  function_name = var.lambda_function_name
+  function_name = var.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.lambda_api.execution_arn}/*/*"
 }

@@ -1,7 +1,7 @@
-variable "lambda_function_name" {
+variable "function_name" {
   type = string
 }
 
-variable "lambda_invoke_arn" {
+variable "invoke_arn" {
   type = string
-}
+} 
