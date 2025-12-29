@@ -1,7 +1,6 @@
 name: TFC Manual Deploy
 
 on:
-  # Removing 'push' means it won't run when you commit code
   workflow_dispatch:
     inputs:
       action:
@@ -12,6 +11,10 @@ on:
         options:
         - plan
         - apply
+      reason:
+        description: 'MANDATORY: Why are you running this? (Shows in Terraform UI)'
+        required: true # GitHub will mark this with a red asterisk
+        type: string
 
 jobs:
   terraform:
@@ -20,6 +23,14 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      # SAFETY CHECK: If the reason is empty or just spaces, fail the build immediately
+      - name: Validate Reason Input
+        run: |
+          if [ -z "${{ github.event.inputs.reason }}" ]; then
+            echo "::error::You must provide a reason for manual execution!"
+            exit 1
+          fi
 
       - name: Zip Lambda
         run: |
@@ -35,21 +46,21 @@ jobs:
         working-directory: ./Terraform
         run: terraform init
 
-      # Runs if you select 'plan' in the dropdown
       - name: Terraform Plan
         if: github.event.inputs.action == 'plan'
         working-directory: ./Terraform
         env:
+          TF_VAR_TFC_RUN_MESSAGE: "${{ github.event.inputs.reason }} (by ${{ github.actor }})"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: terraform plan
 
-      # Runs if you select 'apply' in the dropdown
       - name: Terraform Apply
         if: github.event.inputs.action == 'apply'
         working-directory: ./Terraform
         env:
+          TF_VAR_TFC_RUN_MESSAGE: "${{ github.event.inputs.reason }} (by ${{ github.actor }})"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
