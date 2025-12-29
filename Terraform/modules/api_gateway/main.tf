@@ -13,7 +13,8 @@ resource "aws_apigatewayv2_api" "lambda_api" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.lambda_api.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.workspace_lambda.invoke_arn
+  # Use the variable instead of the resource reference
+  integration_uri  = var.lambda_invoke_arn
 }
 
 # 3. The Route (e.g., your-url.com/execute)
@@ -30,11 +31,11 @@ resource "aws_apigatewayv2_stage" "lambda_stage" {
   auto_deploy = true
 }
 
-# 5. Permission for API Gateway to call Lambda
 resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.workspace_lambda.function_name
+  # Use the variable instead of the resource reference
+  function_name = var.lambda_function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.lambda_api.execution_arn}/*/*"
 }
