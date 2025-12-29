@@ -1,12 +1,22 @@
-name: TFC CLI Deploy
+name: TFC Controlled Deploy
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose to Plan or Apply'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - apply
 
 jobs:
-  terraform:
+  plan:
+    name: "Terraform Plan"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -15,23 +25,50 @@ jobs:
       - name: Zip Lambda
         run: |
           cd lambda_folder
-          # We place the zip directly inside the module folder for easiest pathing
           zip -r ../Terraform/modules/lambda_handler/payload.zip .
-          cd ..
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Terraform Init & Apply
+      - name: Terraform Plan
         working-directory: ./Terraform
         env:
-          # These map to the Secrets you added in GitHub Settings
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
           terraform init
-          #terraform apply -auto-approve
           terraform plan
+
+  apply:
+    name: "Terraform Apply"
+    needs: plan # This job won't start until 'plan' finishes successfully
+    runs-on: ubuntu-latest
+    environment: production # This triggers the "Approve" button we set up in Step 2
+    # Only run apply if we are on main branch
+    if: github.ref == 'refs/heads/main' 
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Zip Lambda
+        run: |
+          cd lambda_folder
+          zip -r ../Terraform/modules/lambda_handler/payload.zip .
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Apply
+        working-directory: ./Terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          terraform init
+          terraform apply -auto-approve
