@@ -1,4 +1,4 @@
-name: TFC CLI Deploy
+name: Terraform Plan and Apply
 
 on:
   push:
@@ -6,32 +6,62 @@ on:
   workflow_dispatch:
 
 jobs:
-  terraform:
+  plan:
+    name: "Terraform Plan"
     runs-on: ubuntu-latest
+    outputs:
+      plan_outcome: ${{ steps.plan.outcome }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Zip Lambda
         run: |
           cd lambda_folder
-          # We place the zip directly inside the module folder for easiest pathing
           zip -r ../Terraform/modules/lambda_handler/payload.zip .
-          cd ..
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: ./Terraform
+        run: terraform plan -no-color
+        continue-on-error: true
+
+      # This magic step puts the plan into your GitHub Action Summary page
+      - name: Post Plan to Summary
+        run: |
+          echo "### Terraform Plan Output" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Click to expand</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.plan.outputs.stdout }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+
+  apply:
+    name: "Terraform Apply"
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: production  # This triggers the "Approve" button
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Zip Lambda (Required again for the new runner)
+        run: |
+          cd lambda_folder
+          zip -r ../Terraform/modules/lambda_handler/payload.zip .
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
 
       - name: Terraform Init & Apply
         working-directory: ./Terraform
-        env:
-          # These map to the Secrets you added in GitHub Settings
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          terraform init
-          #terraform apply -auto-approve
-          terraform plan
+        run: terraform apply -auto-approve
