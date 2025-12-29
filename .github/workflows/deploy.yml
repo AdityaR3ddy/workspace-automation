@@ -3,6 +3,7 @@ name: TFC CLI Deploy
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   terraform:
@@ -32,4 +33,5 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
           terraform init
-          terraform apply -auto-approve
+          #terraform apply -auto-approve
+          terraform plan
