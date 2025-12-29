@@ -25,6 +25,11 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
 
+      # ADD THIS STEP BELOW
+      - name: Terraform Init
+        working-directory: ./Terraform
+        run: terraform init
+
       - name: Terraform Plan
         id: plan
         working-directory: ./Terraform
