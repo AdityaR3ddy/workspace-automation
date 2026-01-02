@@ -1,7 +1,9 @@
 locals {
-  # path.root always points to the main Terraform directory
-  # No matter where the module is, this will look in Terraform/mock_data/
-  account_data = jsondecode(file("${path.root}/mock_data/accounts.json"))
+  # path.module is "modules/dynamo_db"
+  # ../ goes up to "modules"
+  # ../../ goes up to "Terraform"
+  # Then we go into "/mock_data/accounts.json"
+  account_data = jsondecode(file("${path.module}/../../mock_data/accounts.json"))
 }
 
 resource "aws_dynamodb_table" "governance_db" {
