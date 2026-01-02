@@ -12,6 +12,7 @@ module "workspace_automation_s3_website" {
 
 module "lambda_handler" {
   source = "./modules/lambda_handler"
+  dynamodb_table_arn = module.database.table_arn
 }
 
 module "api_gateway" {
