@@ -15,13 +15,11 @@ resource "aws_dynamodb_table" "governance_db" {
 }
 
 resource "aws_dynamodb_table_item" "mock_entries" {
-  # We loop through the list and use account_id as the unique key for Terraform
   for_each = { for acc in local.account_data : acc.account_id => acc }
 
   table_name = aws_dynamodb_table.governance_db.name
   hash_key   = aws_dynamodb_table.governance_db.hash_key
 
-  # We use jsonencode to format the attributes for DynamoDB
   item = jsonencode({
     "account_id" : { "S" : each.value.account_id },
     "org"        : { "S" : each.value.org },

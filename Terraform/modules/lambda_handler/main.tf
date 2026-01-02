@@ -24,7 +24,7 @@ resource "aws_iam_role" "iam_for_lambda" {
 # 3. Basic Logging Permissions
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.iam_for_lambda.name
-  policy_arn = "arn:aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 # 4. Lambda Function Definition
@@ -35,6 +35,13 @@ resource "aws_lambda_function" "workspace_lambda" {
   handler          = "lambda_function.lambda_handler"
   runtime          = "python3.11"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  # Adding environment variables if Python code needs the table name
+  environment {
+    variables = {
+      DYNAMODB_TABLE = "WorkspaceGovernance"
+    }
+  }
 }
 
 # 5. Policy for DynamoDB Access
@@ -52,16 +59,15 @@ resource "aws_iam_policy" "lambda_dynamodb_policy" {
           "dynamodb:Query",
           "dynamodb:PutItem"
         ]
-        # Reference your DynamoDB table ARN here
-        Resource = aws_dynamodb_table.governance_db.arn
+        # FIXED: Referencing the variable instead of a local resource
+        Resource = var.dynamodb_table_arn
       }
     ]
   })
 }
 
-# 6. ATTACHMENT DynamoDB Policy to Lambda Role
+# 6. Attachment of DynamoDB Policy to Lambda Role
 resource "aws_iam_role_policy_attachment" "lambda_db_attach" {
-  # FIXED: Reference the local resource name directly
   role       = aws_iam_role.iam_for_lambda.name
   policy_arn = aws_iam_policy.lambda_dynamodb_policy.arn
 }
