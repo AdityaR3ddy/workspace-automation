@@ -10,11 +10,6 @@ module "workspace_automation_s3_website" {
   bucket_name = "workspace-automation-${random_id.suffix.hex}"
 }
 
-module "lambda_handler" {
-  source = "./modules/lambda_handler"
-  dynamodb_table_arn = module.database.table_arn
-}
-
 module "api_gateway" {
   source = "./modules/api_gateway"
   
@@ -25,4 +20,9 @@ module "api_gateway" {
 
 module "dynamodb_mock_data" {
   source = "./modules/dynamo_db"
+}
+
+module "lambda_handler" {
+  source = "./modules/lambda_handler"
+  dynamodb_table_arn = module.dynamodb_mock_data.table_arn
 }
