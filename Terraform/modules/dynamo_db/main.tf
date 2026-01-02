@@ -3,7 +3,7 @@ locals {
   # ../ goes up to "modules"
   # ../../ goes up to "Terraform"
   # Then we go into "/mock_data/accounts.json"
-  account_data = jsondecode(file("${path.module}/../../mock_data/accounts.json"))
+  account_data = jsondecode(file("${path.module}/../../../mock_data/accounts.json"))
 }
 
 resource "aws_dynamodb_table" "governance_db" {
