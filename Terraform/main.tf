@@ -21,3 +21,7 @@ module "api_gateway" {
   function_name = module.lambda_handler.function_name
   invoke_arn    = module.lambda_handler.invoke_arn
 }
+
+module "dynamodb_mock_data" {
+  source = "./modules/dynamo_db"
+}
