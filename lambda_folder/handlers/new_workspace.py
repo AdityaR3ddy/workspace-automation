@@ -1,38 +1,43 @@
 import boto3
-import json
+import os
 
+# Initialize outside the handler
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('WorkspaceGovernance')
+# Best practice: use an environment variable for the table name
+TABLE_NAME = os.environ.get('DYNAMODB_TABLE', 'WorkspaceGovernance')
+table = dynamodb.Table(TABLE_NAME)
 
-def handle(data):
-    # 1. Extract inputs
+def handle(data, res_func):
     acc_id = data.get('aws-account-num')
     ws_name = data.get('new-ws-name')
     user_lob = data.get('lob', '').lower()
 
-    # 2. DB Lookup
-    response = table.get_item(Key={'account_id': acc_id})
-    if 'Item' not in response:
-        return {"statusCode": 400, "body": json.dumps({"message": "Account ID not registered."})}
+    if not acc_id or not ws_name:
+        return res_func(400, "Missing Account ID or Workspace Name.")
 
-    db_item = response['Item']
-    db_lob = db_item['lob'].lower()
-    env = db_item['env_type']
+    # DB Lookup
+    try:
+        response = table.get_item(Key={'account_id': acc_id})
+        if 'Item' not in response:
+            return res_func(400, f"Account {acc_id} not found in governance DB.")
+        
+        db_item = response['Item']
+        db_lob = db_item['lob'].lower()
+        env = db_item['env_type']
 
-    # 3. Apply your 3 Rules
-    # Rule A: LOB Match
-    if user_lob != db_lob:
-        return error_res(f"LOB mismatch. Expected {db_lob}.")
+        # Rule 1: LOB Match
+        if user_lob != db_lob:
+            return res_func(400, f"LOB mismatch. Account belongs to {db_lob}.")
 
-    # Rule B: Name Prefix
-    if not ws_name.startswith(f"{db_lob}-"):
-        return error_res(f"Name must start with {db_lob}-")
+        # Rule 2: Prefix Check
+        if not ws_name.startswith(f"{db_lob}-"):
+            return res_func(400, f"Name must start with '{db_lob}-'")
 
-    # Rule C: Prod Suffix
-    if env == "PROD" and not ws_name.endswith("-prod"):
-        return error_res("PROD accounts require -prod suffix.")
+        # Rule 3: Prod Suffix Check
+        if env == "PROD" and not ws_name.endswith("-prod"):
+            return res_func(400, "PROD accounts require '-prod' suffix.")
 
-    return {"statusCode": 200, "body": json.dumps({"message": "Governance Passed"})}
-
-def error_res(msg):
-    return {"statusCode": 400, "body": json.dumps({"message": msg})}
+        return res_func(200, "Governance check passed!")
+        
+    except Exception as e:
+        return res_func(500, f"Database error: {str(e)}")

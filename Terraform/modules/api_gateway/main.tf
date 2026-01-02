@@ -1,11 +1,14 @@
-# 1. Define the API
+# 1. Define the HTTP API with built-in CORS
 resource "aws_apigatewayv2_api" "lambda_api" {
   name          = "workspace_automation_api"
-  protocol_type = "HTTP" # HTTP API is cheaper and easier than REST API
+  protocol_type = "HTTP"
+
   cors_configuration {
-    allow_origins = ["*"] # In production, change this to your webpage domain
-    allow_methods = ["POST", "GET", "OPTIONS"]
-    allow_headers = ["content-type"]
+    # Allow all for now; for production replace with your S3 Bucket URL
+    allow_origins = ["*"] 
+    allow_methods = ["POST", "OPTIONS"]
+    allow_headers = ["content-type", "authorization"]
+    max_age       = 300
   }
 }
 
@@ -13,34 +16,35 @@ resource "aws_apigatewayv2_api" "lambda_api" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.lambda_api.id
   integration_type = "AWS_PROXY"
-  # Use the variable instead of the resource reference
   integration_uri  = var.invoke_arn
+  
+  # Crucial for HTTP APIs to pass the request correctly to Lambda
+  payload_format_version = "2.0" 
 }
 
-# 3. The Route (e.g., your-url.com/execute)
+# 3. The Route
+# Note: We use "ANY /execute" to allow the browser's OPTIONS pre-flight 
+# and your POST request to both reach the integration.
 resource "aws_apigatewayv2_route" "lambda_route" {
   api_id    = aws_apigatewayv2_api.lambda_api.id
   route_key = "POST /execute"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
-# 4. Deployment Stage
+# 4. Default Stage with Auto-Deploy
 resource "aws_apigatewayv2_stage" "lambda_stage" {
   api_id      = aws_apigatewayv2_api.lambda_api.id
   name        = "$default"
   auto_deploy = true
 }
 
+# 5. Permission for API Gateway to call Lambda
 resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  # Use the variable instead of the resource reference
   function_name = var.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.lambda_api.execution_arn}/*/*"
-}
 
-# Output the URL so you can use it in your webpage
-output "api_url" {
-  value = "${aws_apigatewayv2_api.lambda_api.api_endpoint}/execute"
+  # Permits the API to invoke the Lambda
+  source_arn = "${aws_apigatewayv2_api.lambda_api.execution_arn}/*/*"
 }
