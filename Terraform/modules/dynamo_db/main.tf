@@ -1,6 +1,6 @@
 locals {
-  # Load and parse the JSON file
-  account_data = jsondecode(file("${path.module}/../../../mock_data/accounts.json"))
+  # This looks for the folder sitting right next to your Terraform/ folder
+  account_data = jsondecode(file("${path.cwd}/../mock_data/accounts.json"))
 }
 
 resource "aws_dynamodb_table" "governance_db" {
