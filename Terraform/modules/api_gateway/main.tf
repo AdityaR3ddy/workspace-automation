@@ -31,6 +31,13 @@ resource "aws_apigatewayv2_route" "lambda_route" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
+# Add OPTIONS route for CORS preflight handling
+resource "aws_apigatewayv2_route" "lambda_options_route" {
+  api_id    = aws_apigatewayv2_api.lambda_api.id
+  route_key = "OPTIONS /execute"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
 # 4. Default Stage with Auto-Deploy
 resource "aws_apigatewayv2_stage" "lambda_stage" {
   api_id      = aws_apigatewayv2_api.lambda_api.id
