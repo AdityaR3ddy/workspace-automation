@@ -1,4 +1,4 @@
-
+/*
 #this will generate a random suffix for the s3 bucket making it unique
 resource "random_id" "suffix" {
   byte_length = 4
@@ -26,3 +26,5 @@ module "lambda_handler" {
   source = "./modules/lambda_handler"
   dynamodb_table_arn = module.dynamodb_mock_data.table_arn
 }
+
+*/
