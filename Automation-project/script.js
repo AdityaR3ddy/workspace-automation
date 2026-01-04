@@ -292,24 +292,33 @@ confirmSubmitBtn.addEventListener('click', async function() {
     try {
         const response = await fetch(`${API_BASE_URL}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(finalValidatedData)
         });
-        const result = await response.json();
+
+        // Debugging logs - Check these in your F12 console
+        console.log("Response Status:", response.status);
+        console.log("Response Headers:", [...response.headers.entries()]);
+
+        const text = await response.text(); // Read as text first to avoid JSON errors
+        console.log("Raw Response Text:", text);
+
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            throw new Error("Server did not return valid JSON: " + text);
+        }
 
         if (response.ok) {
             showStatus(`Success! Request ID: ${result.requestId || 'Queued'}.`, "success");
             workspaceForm.reset();
             clearDynamicLists();
         } else {
-            throw new Error(result.message || "Request rejected.");
+            throw new Error(result.message || "Request failed with status " + response.status);
         }
     } catch (err) {
+        console.error("Caught Error:", err);
         showStatus("Submission Failed: " + err.message, "error");
     } finally {
         submitBtn.innerText = "Submit Request";
