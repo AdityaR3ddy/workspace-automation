@@ -4,6 +4,18 @@ from handlers import new_workspace
 
 def lambda_handler(event, context):
     try:
+        # Handle OPTIONS preflight requests
+        if event.get('httpMethod') == 'OPTIONS':
+            return {
+                "statusCode": 200,
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+                },
+                "body": ""
+            }
+
         # 1. Handle HTTP API v2 Body Parsing
         body_str = event.get('body', '{}')
         
@@ -30,7 +42,7 @@ def lambda_handler(event, context):
         return build_res(500, f"System Error: {str(e)}")
 
 def build_res(code, msg):
-    """Utility to ensure CORS headers are always present."""
+    # Utility to ensure CORS headers are always present.
     return {
         "statusCode": code,
         "headers": {

@@ -289,7 +289,7 @@ confirmSubmitBtn.addEventListener('click', async function() {
     submitBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/submit-request`, {
+        const response = await fetch(`${API_BASE_URL}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(finalValidatedData)
