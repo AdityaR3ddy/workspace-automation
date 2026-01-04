@@ -191,6 +191,10 @@ function gatherFormData() {
                 if (formData.requestType === 'new-workspace') {
                     if (!formData['lob']) validationErrors.push("LOB is mandatory.");
 
+                    if (!formData['new-workspace-type'] || formData['new-workspace-type'] === "default") {
+                        validationErrors.push("Workspace Type (VCS, TEP, etc.) is mandatory.");
+                    }
+
                     // FIX: AWS Account is NOT mandatory if 'Non-AWS' is selected for TEP
                     const isNonAwsTep = (formData['new-workspace-type'] === 'tep' && formData['tep-category'] === 'non-aws');
 
