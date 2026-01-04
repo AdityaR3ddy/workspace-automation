@@ -282,6 +282,7 @@ workspaceForm.addEventListener('submit', function(event) {
     }
 });
 
+// Updated fetch call to include CORS headers and handle preflight requests
 confirmSubmitBtn.addEventListener('click', async function() {
     closeModal();
     const submitBtn = document.getElementById('submitBtn');
@@ -291,7 +292,12 @@ confirmSubmitBtn.addEventListener('click', async function() {
     try {
         const response = await fetch(`${API_BASE_URL}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            },
             body: JSON.stringify(finalValidatedData)
         });
         const result = await response.json();
