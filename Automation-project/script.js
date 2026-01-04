@@ -1,7 +1,7 @@
 // ==========================================
 // 1. CONFIGURATION & CORE ELEMENTS
 // ==========================================
-const API_BASE_URL = "https://8nwb2d8l5k.execute-api.us-east-1.amazonaws.com/execute";
+const API_BASE_URL = "https://6u34jp5qrd.execute-api.us-east-1.amazonaws.com/execute";
 
 const workspaceForm = document.getElementById('workspace-form');
 const requestDropdown = document.getElementById('request-type');
