@@ -1,53 +1,66 @@
 import json
 import base64
+import logging
 from handlers import new_workspace
 
+# Setup logging outside the handler (reused across warm starts)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Define common CORS headers once
+CORS_HEADERS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
 def lambda_handler(event, context):
+    # 1. Immediate Preflight (OPTIONS) return
+    # Use 'routeKey' for HTTP APIs or 'httpMethod' for REST APIs
+    method = event.get('httpMethod') or event.get('requestContext', {}).get('http', {}).get('method')
+    
+    if method == 'OPTIONS':
+        return build_res(200)
+
     try:
-        # Handle OPTIONS preflight requests
-        if event.get('httpMethod') == 'OPTIONS':
-            return {
-                "statusCode": 200,
-                "headers": {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "POST, OPTIONS",
-                    "Access-Control-Allow-Headers": "Content-Type, Authorization"
-                },
-                "body": ""
-            }
-
-        # 1. Handle HTTP API v2 Body Parsing
-        body_str = event.get('body', '{}')
-        
-        # If the body is base64 encoded (common in some browser requests)
+        # 2. Optimized Body Parsing
+        body_raw = event.get('body', '{}')
         if event.get('isBase64Encoded', False):
-            body_str = base64.b64decode(body_str).decode('utf-8')
-            
-        body = json.loads(body_str)
-        request_type = body.get('request-type')
+            body_raw = base64.b64decode(body_raw).decode('utf-8')
+        
+        body = json.loads(body_raw)
+        req_type = body.get('request-type')
 
-        # 2. Route to the correct handler
-        if request_type == "new-workspace":
-            # We pass the build_res function so the handler can use it
-            return new_workspace.handle(body, build_res)
+        # 3. Clean Routing Logic
+        routes = {
+            "new-workspace": lambda: new_workspace.handle(body, build_res),
+            "update-version": "in-dev",
+            "convert-to-tep": "in-dev",
+            "change-aws-account": "in-dev",
+        }
+
+        action = routes.get(req_type)
         
-        elif request_type in ["update-version", "convert-to-tep", "change-aws-account", 
-                            "access-group-update", "misc-request"]:
-            return build_res(403, f"The feature '{request_type}' is currently in development.")
-        
+        if callable(action):
+            return action()
+        elif action == "in-dev":
+            return build_res(403, f"Feature '{req_type}' is in development.")
         else:
-            return build_res(400, "Unknown request type.")
+            return build_res(400, f"Invalid request type: {req_type}")
 
+    except json.JSONDecodeError:
+        return build_res(400, "Invalid JSON format in request body.")
     except Exception as e:
-        return build_res(500, f"System Error: {str(e)}")
+        logger.error(f"Execution Error: {str(e)}", exc_info=True)
+        return build_res(500, "Internal Server Error")
 
-def build_res(code, msg):
-    # Utility to ensure CORS headers are always present.
-    return {
+def build_res(code, msg=None):
+    """Unified response builder ensuring CORS is always attached."""
+    response = {
         "statusCode": code,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-        },
-        "body": json.dumps({"message": msg})
+        "headers": CORS_HEADERS,
     }
+    if msg:
+        response["body"] = json.dumps({"message": msg})
+    return response
