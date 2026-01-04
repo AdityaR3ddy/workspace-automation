@@ -1,66 +1,46 @@
 import json
 import base64
-import logging
 from handlers import new_workspace
 
-# Setup logging outside the handler (reused across warm starts)
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-# Define common CORS headers once
+# Define these globally so they never change between OPTIONS and POST
 CORS_HEADERS = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Amz-Date, X-Api-Key, X-Amz-Security-Token"
 }
 
 def lambda_handler(event, context):
-    # 1. Immediate Preflight (OPTIONS) return
-    # Use 'routeKey' for HTTP APIs or 'httpMethod' for REST APIs
-    method = event.get('httpMethod') or event.get('requestContext', {}).get('http', {}).get('method')
+    # Detection for HTTP API v2 payload format
+    method = event.get('requestContext', {}).get('http', {}).get('method', 'POST')
     
+    # 1. Handle OPTIONS (Preflight)
     if method == 'OPTIONS':
-        return build_res(200)
+        return build_res(200, "CORS Preflight OK")
 
     try:
-        # 2. Optimized Body Parsing
+        # 2. Extract and Parse Body
         body_raw = event.get('body', '{}')
         if event.get('isBase64Encoded', False):
             body_raw = base64.b64decode(body_raw).decode('utf-8')
         
         body = json.loads(body_raw)
-        req_type = body.get('request-type')
+        req_type = body.get('requestType')
 
-        # 3. Clean Routing Logic
-        routes = {
-            "new-workspace": lambda: new_workspace.handle(body, build_res),
-            "update-version": "in-dev",
-            "convert-to-tep": "in-dev",
-            "change-aws-account": "in-dev",
-        }
-
-        action = routes.get(req_type)
+        # 3. Routing
+        if req_type == "new-workspace":
+            # IMPORTANT: Ensure your handler actually returns the result of build_res!
+            return new_workspace.handle(body, build_res)
         
-        if callable(action):
-            return action()
-        elif action == "in-dev":
-            return build_res(403, f"Feature '{req_type}' is in development.")
-        else:
-            return build_res(400, f"Invalid request type: {req_type}")
+        return build_res(400, f"Unknown type: {req_type}")
 
-    except json.JSONDecodeError:
-        return build_res(400, "Invalid JSON format in request body.")
     except Exception as e:
-        logger.error(f"Execution Error: {str(e)}", exc_info=True)
-        return build_res(500, "Internal Server Error")
+        # If this part triggers, build_res MUST still send the headers
+        return build_res(500, f"Error: {str(e)}")
 
-def build_res(code, msg=None):
-    """Unified response builder ensuring CORS is always attached."""
-    response = {
+def build_res(code, msg):
+    return {
         "statusCode": code,
-        "headers": CORS_HEADERS,
+        "headers": CORS_HEADERS, # Use the global dictionary
+        "body": json.dumps({"message": msg})
     }
-    if msg:
-        response["body"] = json.dumps({"message": msg})
-    return response
