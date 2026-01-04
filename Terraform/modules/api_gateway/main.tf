@@ -6,7 +6,7 @@ resource "aws_apigatewayv2_api" "lambda_api" {
   cors_configuration {
     allow_origins = ["*"]
     allow_methods = ["POST", "OPTIONS"]
-    allow_headers = ["content-type", "authorization"]
+    allow_headers = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token", "X-Amz-User-Agent"]
     max_age       = 300
   }
 }
