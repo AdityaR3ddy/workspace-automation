@@ -29,5 +29,5 @@ module "lambda_handler" {
 */
 resource "aws_ssm_service_setting" "test_setting" {
   setting_id    = "arn:aws:ssm:us-east-1:450558841963:servicesetting/ssm/parameter-store/high-throughput-enabled"
-  setting_value = "true"
+  setting_value = "false"
 }
