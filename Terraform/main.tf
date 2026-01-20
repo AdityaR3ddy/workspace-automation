@@ -27,3 +27,7 @@ module "lambda_handler" {
   dynamodb_table_arn = module.dynamodb_mock_data.table_arn
 }
 */
+resource "aws_ssm_service_setting" "test_setting" {
+  setting_id    = "arn:aws:ssm:us-east-1:450558841963:servicesetting/ssm/parameter-store/high-throughput-enabled"
+  setting_value = "false"
+}
